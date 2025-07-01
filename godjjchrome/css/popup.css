@@ -73,3 +73,18 @@ td {
     background-color: #6441A4;
     cursor: pointer;
 }
+
+/* 設定圖標樣式 */
+.options-icon {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    cursor: pointer;
+}
+
+.options-icon:hover {
+    transform: rotate(45deg);
+    transition: all 0.5s ease;
+}
+
+

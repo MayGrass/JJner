@@ -16,6 +16,12 @@
             chrome.tabs.create({ "url": this.getAttribute("data-content") });
         });
     });
+    
+    // 設定按鈕事件處理
+    document.getElementById("optionsButton").addEventListener("click", function() {
+        chrome.runtime.openOptionsPage();
+    });
+    
     // 獲取和設置跑馬燈的內容
     fetchLatestYoutubeVideo();
 });
