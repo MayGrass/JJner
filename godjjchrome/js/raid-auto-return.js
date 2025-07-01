@@ -76,6 +76,27 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
     return true;
 });
 
+// 監聽 URL 變化 (備用方式)
+function setupUrlChangeListener() {
+    // 只在非被揪團頁面初始化 prevUrl
+    const initialIsRaided = isRaidedPage();
+    if (!initialIsRaided) {
+        sessionStorage.setItem('prevUrl', location.href);
+    }
+
+    let currentUrl = location.href;
+    const observer = new MutationObserver(() => {
+        if (currentUrl !== location.href) {
+            currentUrl = location.href; // 更新當前的 URL，防止監聽器重複觸發
+            checkAndReturnIfNeeded();
+        }
+    });
+    observer.observe(document, { subtree: true, childList: true });
+}
+
 // 初始檢查
 checkAndReturnIfNeeded();
 initSettings();
+
+// 備用的 URL 變化監聽器
+setupUrlChangeListener();
