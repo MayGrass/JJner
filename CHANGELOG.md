@@ -4,10 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
-## [3.1.3] - 2025
+## [3.1.3] - 2025-07-02
+
+### Added
+
+- popup頁面右上角新增設定圖標連結，提供快速進入設定頁面的入口
 
 ### Fixed
 
+- 優化自動回家功能的穩定性，更新監聽方式，並把舊有方式改為備用以提升檢測準確性
+- 修正聊天訊息過濾功能的正則表達式，新增對「元」字的匹配支援
+- 獨立播放器錯誤檢測功能，將其從自動點擊忠誠點數功能中分離並提升穩定性
 
 ## [3.1.2] - 2025-05-15
 
