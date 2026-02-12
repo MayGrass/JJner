@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
+## [3.2.0] - 2026-02-12
+
+### Added
+
+- 新增Twitch News跑馬燈，隨機顯示前一日實況重要事件，點擊後可前往實況日報網站觀看更詳細的內容
+- 淘汰過時的marquee標籤，改用CSS動畫實現跑馬燈效果
+
 ## [3.1.4] - 2025-12-09
 
 ### Fixed
