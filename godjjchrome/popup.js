@@ -1,4 +1,38 @@
-﻿document.addEventListener('DOMContentLoaded', function () {
+﻿// 工具函數：格式化日期為 YYYY-MM-DD
+function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+// 工具函數：設置按鈕點擊事件（移除舊監聽器避免重複綁定）
+function setButtonClickHandler(buttonId, url) {
+    let button = document.getElementById(buttonId);
+    const newButton = button.cloneNode(true);
+    button.parentNode.replaceChild(newButton, button);
+    button = document.getElementById(buttonId);
+    button.addEventListener("click", function () {
+        chrome.tabs.create({ "url": url });
+    });
+}
+
+// 工具函數：重置跑馬燈動畫（節點重建方式）
+function resetMarqueeAnimation(element, newText) {
+    const oldSpan = element.parentElement;
+    if (oldSpan && oldSpan.classList.contains('marquee-content')) {
+        const newSpan = oldSpan.cloneNode(false);
+        newSpan.innerHTML = `<b id="${element.id}">${newText}</b>`;
+        newSpan.style.animation = 'none';
+        oldSpan.replaceWith(newSpan);
+        newSpan.style.animation = '';
+        return document.getElementById(element.id);
+    }
+    element.innerText = newText;
+    return element;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
     var buttonMap = new Map();
     buttonMap.set("FBbutton", "https://www.facebook.com/GodJJLOL");
     buttonMap.set("Youtubebutton", "https://www.youtube.com/channel/UCt--8DKolHNzogSofX35fRQ");
@@ -16,15 +50,71 @@
             chrome.tabs.create({ "url": this.getAttribute("data-content") });
         });
     });
-    
+
     // 設定按鈕事件處理
-    document.getElementById("optionsButton").addEventListener("click", function() {
+    document.getElementById("optionsButton").addEventListener("click", function () {
         chrome.runtime.openOptionsPage();
     });
-    
+
     // 獲取和設置跑馬燈的內容
+    fetchLatestTwitchEvent();
     fetchLatestYoutubeVideo();
 });
+
+// 獲取 Twitch 昨日實況摘要
+function fetchLatestTwitchEvent() {
+    setButtonClickHandler("TwitchNewsbutton", "https://maygrass.github.io/twitch-daily-news/?channel=godjj");
+    let twitchnewsElement = document.getElementById("twitchnews");
+    twitchnewsElement.innerText = "正在載入昨日實況摘要...";
+
+    // 計算昨天的日期
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const dateString = formatDate(yesterday);
+
+    const apiUrl = `https://script.google.com/macros/s/AKfycbyPLXgvLDZLDJZQ62Uu-nC-u0esfeqx6fODSRELT4_b_sj2jokvHXi70FguzhzZfBOfWA/exec?channel=godjj&date=${dateString}`;
+
+    fetch(apiUrl)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            // 檢查 API 回傳是否成功
+            if (!data.success) {
+                throw new Error("API returned success: false");
+            }
+
+            // 檢查是否有 important_events
+            const events = data.summary?.important_events;
+            if (!events || !Array.isArray(events) || events.length === 0) {
+                throw new Error("No important events found");
+            }
+
+            // 啟動輪播功能
+            let currentIndex = -1;
+            const rotateEvent = () => {
+                // 隨機選取下一個事件（確保不重複）
+                let nextIndex;
+                do {
+                    nextIndex = Math.floor(Math.random() * events.length);
+                } while (nextIndex === currentIndex && events.length > 1);
+
+                currentIndex = nextIndex;
+                twitchnewsElement = resetMarqueeAnimation(twitchnewsElement, events[currentIndex].event);
+                setTimeout(rotateEvent, 8000);
+            };
+
+            // 開始輪播
+            rotateEvent();
+        })
+        .catch(error => {
+            console.error("Error fetching Twitch daily news:", error);
+            twitchnewsElement.innerText = "無法載入昨日實況摘要";
+        });
+}
 
 // 獲取 YouTube 最新影片資訊
 function fetchLatestYoutubeVideo() {
@@ -66,19 +156,9 @@ function fetchLatestYoutubeVideo() {
 
                 // 設置跑馬燈內容
                 newsElement.innerText = title;
-                const newsMarquee = document.getElementById("newsMarquee");
-                newsMarquee.setAttribute("behavior", "scroll");
 
-                // 啟用按鈕點擊開啟影片
-                let Newsbutton = document.getElementById("Newsbutton");
-                // 先移除舊的事件監聽器，避免重複綁定，會導致跑馬燈第一次跑到一半就被重置
-                const newButton = Newsbutton.cloneNode(true);
-                Newsbutton.parentNode.replaceChild(newButton, Newsbutton);
-                // 重新獲取新的按鈕元素
-                Newsbutton = document.getElementById("Newsbutton");
-                Newsbutton.addEventListener("click", function () {
-                    chrome.tabs.create({ "url": videoUrl });
-                });
+                // 設置按鈕點擊事件
+                setButtonClickHandler("YoutubeNewsbutton", videoUrl);
             } else {
                 throw new Error("No video entries found");
             }
