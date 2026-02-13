@@ -1,12 +1,4 @@
-﻿// 工具函數：格式化日期為 YYYY-MM-DD
-function formatDate(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
-
-// 工具函數：設置按鈕點擊事件（移除舊監聽器避免重複綁定）
+﻿// 工具函數：設置按鈕點擊事件（移除舊監聽器避免重複綁定）
 function setButtonClickHandler(buttonId, url) {
     let button = document.getElementById(buttonId);
     const newButton = button.cloneNode(true);
@@ -67,10 +59,16 @@ function fetchLatestTwitchEvent() {
     let twitchnewsElement = document.getElementById("twitchnews");
     twitchnewsElement.innerText = "正在載入昨日實況摘要...";
 
-    // 計算昨天的日期
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const dateString = formatDate(yesterday);
+    // 計算應該查詢的日期（日報在 UTC 01:00 更新前一天的摘要）
+    const now = new Date();
+    const targetDate = new Date(now);
+    // 如果 UTC 時間還沒到凌晨 1 點，查詢前天；否則查詢昨天
+    const daysToSubtract = now.getUTCHours() < 1 ? 2 : 1;
+    targetDate.setUTCDate(targetDate.getUTCDate() - daysToSubtract);
+    const year = targetDate.getUTCFullYear();
+    const month = String(targetDate.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(targetDate.getUTCDate()).padStart(2, '0');
+    const dateString = `${year}-${month}-${day}`;
 
     const apiUrl = `https://script.google.com/macros/s/AKfycbyPLXgvLDZLDJZQ62Uu-nC-u0esfeqx6fODSRELT4_b_sj2jokvHXi70FguzhzZfBOfWA/exec?channel=godjj&date=${dateString}`;
 
